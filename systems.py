@@ -79,7 +79,8 @@ class Example(Frame):
         acceptWin.title('Accept Window')
         acceptWin.geometry(geoscreen)
         acceptWin.configure()
-        
+        # acceptWin.overrideredirect(1)
+
         menuLabel = Label(acceptWin)
         menuLabel.config(text="Please select the food you want to take")
         menuLabel.pack()
@@ -93,7 +94,6 @@ class Example(Frame):
             checkbuts[key].pack()
 
         def submitAccept():
-            print enable
             for e in enable:
                 if enable[e].get() == 1:
                     checkbuts[key].destroy()

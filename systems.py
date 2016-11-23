@@ -1,21 +1,20 @@
 import Tkinter as tk
-from Tkinter import Tk, RIGHT, BOTH, RAISED, Label, Radiobutton, StringVar, IntVar
-from ttk import *
+from Tkinter import Tk, RIGHT, BOTH, RAISED, Label, Radiobutton, StringVar, IntVar, Frame
+from ttk import Button, Style, Frame
 from PIL import Image, ImageTk
 import tkFont
 
 root = Tk()
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
+
+
 geoscreen = "%dx%d" % (screen_width, screen_height)
 
 #Stores list of dics with keys descp, type, diet, allergen
 localdb = []
 # root.overrideredirect(1)
 # print  tkFont.families()
-
-
-
 
 class Example(Frame):
   
@@ -31,8 +30,10 @@ class Example(Frame):
 
 
     def __init__(self, parent):
+
+
         Frame.__init__(self, parent)   
-         
+        
         self.parent = parent
         
         self.initUI()
@@ -48,7 +49,7 @@ class Example(Frame):
 
         self.pack(fill=BOTH, expand=1)
 
-        self.style.configure("TFrame")
+        self.style.configure("TFrame", background='#1BA')
         
         logo = Image.open("logo.png")
         logow , logoh = logo.size
@@ -59,14 +60,14 @@ class Example(Frame):
 
         shareButton = self.MyButton(self, text="Share",
                              command=self.create_ShareWin, 
-                                    width = 200, height=100)
-        shareButton.place(x = screen_width/4, y=screen_height/2)
+                                    width = screen_width/2, height=screen_height/2)
+        shareButton.place(x = 0, y=screen_height/2)
         # shareButton.grid(row=1,column=0)
 
         acceptButton = self.MyButton(self, text="Accept",
                               command=self.create_AcceptWin,
-                              width = 200, height=100)
-        acceptButton.place(x = screen_width/4*2.5, y=screen_height/2)
+                                     width = screen_width/2, height=screen_height/2)
+        acceptButton.place(x = screen_width/2, y=screen_height/2)
         # acceptButton.grid(row=6,column=2)
 
         quitButton = Button(self, text="Quit",
@@ -161,62 +162,15 @@ class Example(Frame):
         
 
 def main():
-    # root.geometry("650x150+300+300")
     root.geometry(geoscreen)
-    root.tk_setPalette(background='#fff', foreground='slate gray',
+    root.tk_setPalette(background='#1BA', foreground='slate gray',
                activeBackground='slate gray')
+
     app = Example(root)
+
     root.mainloop()  
 
 
 if __name__ == '__main__':
     main()
-
-
-
-  # Q1R1 = Radiobutton(shareWin, text="Meat", value="meat")
-  # Q1R1.pack()
-
-  # Q1R2 = Radiobutton(shareWin, text="Dairy", value="dairy")
-  # Q1R2.pack()
-
-  # Q1R3 = Radiobutton(shareWin, text="Baked", value="baked")
-  # Q1R3.pack()
-
-  # Q1R4 = Radiobutton(shareWin, text="Produce", value="produce")
-  # Q1R2.pack()
-
-  # Q1R5 = Radiobutton(shareWin, text="Non Preishable", value="non-perishable")
-  # Q1R5.pack()
-
-  # Q1R6 = Radiobutton(shareWin, text="Frozen", value="frozen")
-  # Q1R6.pack()
-
-  # Q1R7 = Radiobutton(shareWin, text="Other", value="other")
-  # Q1R7.pack()
-
-
-  # Q2R1 = Radiobutton(shareWin, text="Gluten Free", value="gluten-free")
-  # Q2R1.pack()
-
-  # Q2R2 = Radiobutton(shareWin, text="Tree Nut Free", value="tree nut free")
-  # Q2R2.pack()
-
-  # Q2R3 = Radiobutton(shareWin, text="Peanut Free", value="peanut free")
-  # Q2R3.pack()
-
-  # Q2R4 = Radiobutton(shareWin, text="Milk Free", value="milk free")
-  # Q2R2.pack()
-
-  # Q2R5 = Radiobutton(shareWin, text="Vegan", value="vegan")
-  # Q2R5.pack()
-
-  # Q2R6 = Radiobutton(shareWin, text="Kosher", value="kosher")
-  # Q2R6.pack()
-
-  # Q2R7 = Radiobutton(shareWin, text="Halal", value="halal")
-  # Q2R7.pack()
-
-  # Q2R8 = Radiobutton(shareWin, text="Other", value="other")
-  # Q2R8.pack()
 

@@ -4,6 +4,7 @@ import tkFont
 from ttk import Button, Style, Frame, Entry, OptionMenu, Checkbutton
 from PIL import Image, ImageTk
 import tkFont
+import csv
 
 root = Tk()
 screen_width = root.winfo_screenwidth()
@@ -14,7 +15,8 @@ geoscreen = "%dx%d" % (screen_width, screen_height)
 
 #Stores list of dics with keys descp, type, diet, allergen
 localdb = []
-
+iddb = []
+foodList = {}
 
 # root.overrideredirect(1)
 # print  tkFont.families()
@@ -52,6 +54,24 @@ allergenDic = {'Egg' : eggAClicked,
                'Soya' : soyaAClicked,
                'Wheat' : wheatAClicked,
                'Shellfish' : shellfishAClicked}
+
+def clearDic():
+    for f in allergenDic:
+        allergenDic[f] = False
+    for f in foodtypeDic:
+        foodtypeDic[f] = False
+
+def writeToCSV():
+    with open('ID' + '.csv', 'w') as mycsvfile:
+     thedatawriter = csv.writer(mycsvfile)
+     for row in iddb:
+         thedatawriter.writerow(row)
+
+
+    with open('Food' + '.csv', 'w') as mycsvfile:
+     thedatawriter = csv.writer(mycsvfile)
+     for row in localdb:
+         thedatawriter.writerow(row)
 
 class Example(Frame):
   
@@ -135,26 +155,32 @@ class Example(Frame):
         # acceptWin.overrideredirect(1)
 
         menuLabel = Label(acceptWin)
-        menuLabel.config(text="Please select the food you want to take")
+        menuLabel.config(text="Thank You", fg="white", font=("Helvetica", 48))
         menuLabel.pack()
         
-        enable = {}
-        checkbuts = {}
-        for f in localdb:
-            key = f['descp']
-            enable[key] = IntVar()
-            checkbuts[key] = Checkbutton(acceptWin, text='%s Food-Type:%s Diet:%s Allergens:%s' % tuple(f.values()), variable=enable[key])
-            checkbuts[key].pack()
+        idText = Label(acceptWin, text="Do you want updates? Please enter your netid:", fg="white", font=("Helvetica", 16))
+        idText.pack()
 
+        idvar = StringVar()
+        idE = Entry(acceptWin, textvariable=idvar)
+
+        idE.pack()
+
+        
         def submitAccept():
-            for e in enable:
-                if enable[e].get() == 1:
-                    checkbuts[key].destroy()
-                    localdb[:] = [d for d in localdb if d['descp'] != key]
-                    
+            if len(idvar.get()) > 0: iddb.append([idvar.get()])
+
+            print localdb
+            print iddb
+            writeToCSV()
+
             acceptWin.destroy()
         
-        submitButton = Button(acceptWin, text="Submit", command=submitAccept) 
+        self.style.configure("accept.TButton", font=("Helvetica","24"),
+                             foreground="white",background="purple")
+
+        submitButton = Button(acceptWin, text="Done", command=submitAccept,
+                              style="accept.TButton") 
         submitButton.pack()
 
     def create_ShareWin(self):
@@ -485,22 +511,48 @@ class Example(Frame):
 
         
         def submitFood():
-            localdb.append({'descp':descEntry.get(),
-                            'type':var1.get(),
-                            'diet':var2.get(),
-                            'allergen':var3.get()})
+            global foodtypeDic, allergenDic, foodList
+            
+            typestr = "Type: "
+            for f in foodtypeDic:
+                if foodtypeDic[f]:
+                    typestr += f + " "
+                    
+            allergenstr = "Allergen: "
+            for f in allergenDic :
+                if allergenDic[f]:
+                    allergenstr += f + " "
+                
+            localdb.append([typestr,allergenstr])
+
+            clearDic()
+            if len(idvar.get()) > 0: iddb.append([idvar.get()])
+
+            print localdb
+            print iddb
+
+            writeToCSV()
+
+
             shareWin.destroy()
 
-        updatevar = StringVar()
+        # updatevar = StringVar()
         
-        emailCheck = Checkbutton(shareWin ,variable=updatevar, 
-                                 text="Do you want updates?")
+        # emailCheck = Checkbutton(shareWin ,variable=updatevar, 
+        #                          text="Do you want updates? Enter yo")
 
-        emailCheck.grid(row=12,column=1)
-        
+        # emailCheck.grid(row=12,column=1)
+
+        idText = Label(shareWin, text="Do you want updates? Please enter your netid:", fg="white", font=("Helvetica", 16))
+        idText.grid(row=12, column=1)
+
+        idvar = StringVar()
+        idE = Entry(shareWin, textvariable=idvar)
+
+        idE.grid(row=13, column=1)
         
         submitButton = Button(shareWin, text="Submit", command=submitFood) 
-        submitButton.grid(row=13, column=1)
+        submitButton.grid(row=14, column=1)
         
 
 def main():

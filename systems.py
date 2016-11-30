@@ -5,18 +5,27 @@ from ttk import Button, Style, Frame, Entry, OptionMenu, Checkbutton
 from PIL import Image, ImageTk
 import tkFont
 import csv
+import subprocess
 
 root = Tk()
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
 
+def activateKeyboard(event):
+    subprocess.call("./keyboard.sh", shell=True)
+
+def deactivateKeyboard():
+    subprocess.call("./kill.sh", shell=True)
 
 geoscreen = "%dx%d" % (screen_width, screen_height)
 
 #Stores list of dics with keys descp, type, diet, allergen
 localdb = []
 iddb = []
+scandb = []
 foodList = {}
+accepts = 0
+shares = 0
 
 # root.overrideredirect(1)
 # print  tkFont.families()
@@ -107,7 +116,7 @@ class Example(Frame):
 
         self.style.configure("TFrame", background='#1BA',
                              font=("Helvetica","18"), foreground="white")
-        self.style.configure("TButton", font=("Helvetica","100"), 
+        self.style.configure("TButton", font=("Helvetica","64"), 
                              foreground="white",background="purple")
         self.style.configure("TLabel", font=("Helvetica","18"), 
                              foreground="white")
@@ -128,18 +137,18 @@ class Example(Frame):
 
         shareButton = self.MyButton(self, text="Give",
                                     command=self.create_ShareWin, 
-                                    width = screen_width/2, 
-                                    height=screen_height/2
+                                    width = screen_width/2.5, 
+                                    height=screen_height/2.5
         )
 
-        shareButton.place(x = 0, y=screen_height/2)
+        shareButton.place(x = 20, y=screen_height/2)
         # shareButton.grid(row=1,column=0)
 
         acceptButton = self.MyButton(self, text="Accept",
                                      command=self.create_AcceptWin,
-                                     width = screen_width/2, 
-                                     height=screen_height/2)
-        acceptButton.place(x = screen_width/2, y=screen_height/2+5)
+                                     width = screen_width/2.5, 
+                                     height=screen_height/2.5)
+        acceptButton.place(x = screen_width/2, y=screen_height/2)
         # acceptButton.grid(row=6,column=2)
 
         # quitButton = Button(self, text="Quit",
@@ -148,6 +157,9 @@ class Example(Frame):
         # quitButton.pack()
 
     def create_AcceptWin(self):
+        global accepts
+        accepts += 1
+        print 'Number of Accepts: %d' % accepts
         acceptWin = tk.Toplevel(self)
         acceptWin.title('Accept Window')
         acceptWin.geometry(geoscreen)
@@ -158,22 +170,11 @@ class Example(Frame):
         menuLabel.config(text="Thank You", fg="white", font=("Helvetica", 48))
         menuLabel.pack()
         
-        idText = Label(acceptWin, text="Do you want updates? Please enter your netid:", fg="white", font=("Helvetica", 16))
-        idText.pack()
-
-        idvar = StringVar()
-        idE = Entry(acceptWin, textvariable=idvar)
-
-        idE.pack()
-
-        
         def submitAccept():
             if len(idvar.get()) > 0: iddb.append([idvar.get()])
 
-            print localdb
-            print iddb
             writeToCSV()
-
+            deactivateKeyboard()
             acceptWin.destroy()
         
         self.style.configure("accept.TButton", font=("Helvetica","24"),
@@ -181,9 +182,29 @@ class Example(Frame):
 
         submitButton = Button(acceptWin, text="Done", command=submitAccept,
                               style="accept.TButton") 
-        submitButton.pack()
+        submitButton.pack(side=BOTTOM)
+
+        def BarcodeScan(event):
+            val=('{k!r}'.format(k = event.char))[1:-1]
+                    
+            if val=='\\r':
+                if len(idvar.get()) == 16:
+                    scandb.append(idvar.get())
+        
+        idvar = StringVar()
+        idE = Entry(acceptWin, textvariable=idvar)
+        #idE.bind("<FocusIn>",activateKeyboard)
+        idE.bind("<Key>",BarcodeScan)
+        idE.pack(side=BOTTOM)
+
+        idText = Label(acceptWin, text="Do you want updates? Please enter your netid:", fg="white", font=("Helvetica", 16))
+        idText.pack(side=BOTTOM)
+
 
     def create_ShareWin(self):
+        global shares
+        shares += 1
+        print 'Number of Shares: %d' % shares
         shareWin = tk.Toplevel(self)
         shareWin.title('Share Window')
         shareWin.geometry(geoscreen)
@@ -192,7 +213,7 @@ class Example(Frame):
 
         menuLabel = Label(shareWin)
         menuLabel.config(text="Please select all that apply", 
-                         font=("Helvetica",18), foreground="white")
+                         font=("Helvetica",14), foreground="white")
         menuLabel.grid(row=0, column= 1)
 
 
@@ -200,7 +221,7 @@ class Example(Frame):
         
         Q1 = Label(shareWin)
         Q1.config(text="Food Type", 
-                         font=("Helvetica",24), foreground="white")
+                         font=("Helvetica",16), foreground="white")
         Q1.grid(row=1, column=0)
 
         def pressM():
@@ -214,7 +235,7 @@ class Example(Frame):
                 self.style.configure("meat.TButton", background="purple")
 
 
-        self.style.configure("meat.TButton", font=("Helvetica","24"),
+        self.style.configure("meat.TButton", font=("Helvetica","14"),
                              foreground="white",background="purple")
 
         meatButton = self.MyButton(shareWin, text="Meat",
@@ -237,7 +258,7 @@ class Example(Frame):
                 self.style.configure("dairy.TButton", background="purple")
 
 
-        self.style.configure("dairy.TButton", font=("Helvetica","24"),
+        self.style.configure("dairy.TButton", font=("Helvetica","14"),
                              foreground="white",background="purple")
 
         dairyButton = self.MyButton(shareWin, text="Dairy",
@@ -259,7 +280,7 @@ class Example(Frame):
                 self.style.configure("produce.TButton", background="purple")
 
 
-        self.style.configure("produce.TButton", font=("Helvetica","24"),
+        self.style.configure("produce.TButton", font=("Helvetica","14"),
                              foreground="white",background="purple")
 
         produceButton = self.MyButton(shareWin, text="Produce",
@@ -280,7 +301,7 @@ class Example(Frame):
                 self.style.configure("baked.TButton", background="purple")
 
 
-        self.style.configure("baked.TButton", font=("Helvetica","24"),
+        self.style.configure("baked.TButton", font=("Helvetica","14"),
                              foreground="white",background="purple")
 
         bakedButton = self.MyButton(shareWin, text="Baked",
@@ -301,7 +322,7 @@ class Example(Frame):
                 self.style.configure("frozen.TButton", background="purple")
 
 
-        self.style.configure("frozen.TButton", font=("Helvetica","24"),
+        self.style.configure("frozen.TButton", font=("Helvetica","14"),
                              foreground="white",background="purple")
 
         frozenButton = self.MyButton(shareWin, text="Frozen",
@@ -322,7 +343,7 @@ class Example(Frame):
                 self.style.configure("packaged.TButton", background="purple")
 
 
-        self.style.configure("packaged.TButton", font=("Helvetica","24"),
+        self.style.configure("packaged.TButton", font=("Helvetica","14"),
                              foreground="white",background="purple")
         
         packagedButton = self.MyButton(shareWin, text="Packaged",
@@ -335,7 +356,7 @@ class Example(Frame):
 
         Q2 = Label(shareWin)
         Q2.config(text="Possible Allergens", 
-                         font=("Helvetica",24), foreground="white")
+                         font=("Helvetica",16), foreground="white")
         Q2.grid(row=1, column=2)
 
 
@@ -350,13 +371,13 @@ class Example(Frame):
                 self.style.configure("egg.TButton", background="purple")
 
 
-        self.style.configure("egg.TButton", font=("Helvetica","24"),
+        self.style.configure("egg.TButton", font=("Helvetica","14"),
                              foreground="white",background="purple")
         
         eggButton = self.MyButton(shareWin, text="Egg",
-                                   width = screen_width/15, 
-                                   height=screen_height/15,
-                                   style="egg.TButton",
+                                  width = screen_width/10, 
+                                  height=screen_height/10,
+                                  style="egg.TButton",
                                   command=pressEggA)
         eggButton.grid(row=2, column=2, pady=2)
 
@@ -371,13 +392,13 @@ class Example(Frame):
                 self.style.configure("fish.TButton", background="purple")
 
 
-        self.style.configure("fish.TButton", font=("Helvetica","24"),
+        self.style.configure("fish.TButton", font=("Helvetica","14"),
                              foreground="white",background="purple")
 
 
         fishButton = self.MyButton(shareWin, text="Fish",
-                                   width = screen_width/15, 
-                                   height=screen_height/15,
+                                   width = screen_width/10, 
+                                   height=screen_height/10,
                                    style="fish.TButton",
                                    command=pressFishA)
         fishButton.grid(row=3, column=2, pady=2)
@@ -393,12 +414,12 @@ class Example(Frame):
                 self.style.configure("milk.TButton", background="purple")
 
 
-        self.style.configure("milk.TButton", font=("Helvetica","24"),
+        self.style.configure("milk.TButton", font=("Helvetica","14"),
                              foreground="white",background="purple")
 
         milkButton = self.MyButton(shareWin, text="Milk",
-                                   width = screen_width/15, 
-                                   height=screen_height/15,
+                                   width = screen_width/10, 
+                                   height=screen_height/10,
                                    style="milk.TButton",
                                    command=pressMilkA)
         milkButton.grid(row=4, column=2, pady=2)
@@ -414,12 +435,12 @@ class Example(Frame):
                 self.style.configure("nuts.TButton", background="purple")
 
 
-        self.style.configure("nuts.TButton", font=("Helvetica","24"),
+        self.style.configure("nuts.TButton", font=("Helvetica","14"),
                              foreground="white",background="purple")
 
         nutsButton = self.MyButton(shareWin, text="Nuts",
-                                   width = screen_width/15, 
-                                   height=screen_height/15,
+                                   width = screen_width/10, 
+                                   height=screen_height/10,
                                    style="nuts.TButton",
                                    command=pressNutsA)
         nutsButton.grid(row=5, column=2, pady=2)
@@ -435,12 +456,12 @@ class Example(Frame):
                 self.style.configure("peanuts.TButton", background="purple")
 
 
-        self.style.configure("peanuts.TButton", font=("Helvetica","24"),
+        self.style.configure("peanuts.TButton", font=("Helvetica","12"),
                              foreground="white",background="purple")
 
         peanutsButton = self.MyButton(shareWin, text="Peanuts",
-                                      width = screen_width/15, 
-                                      height=screen_height/15,
+                                      width = screen_width/10, 
+                                      height=screen_height/10,
                                       style="peanuts.TButton",
                                       command=pressPeanutsA)
         peanutsButton.grid(row=6, column=2, pady=2)
@@ -456,12 +477,12 @@ class Example(Frame):
                 self.style.configure("shellfish.TButton", background="purple")
 
 
-        self.style.configure("shellfish.TButton", font=("Helvetica","24"),
+        self.style.configure("shellfish.TButton", font=("Helvetica","10"),
                              foreground="white",background="purple")
 
         shellfishButton = self.MyButton(shareWin, text="Shellfish",
-                                        width = screen_width/15, 
-                                        height=screen_height/15,
+                                        width = screen_width/10, 
+                                        height=screen_height/10,
                                         style="shellfish.TButton",
                                         command=pressShellfishA)
         shellfishButton.grid(row=2, column=3, pady=2)
@@ -477,13 +498,13 @@ class Example(Frame):
                 self.style.configure("soya.TButton", background="purple")
 
 
-        self.style.configure("soya.TButton", font=("Helvetica","24"),
+        self.style.configure("soya.TButton", font=("Helvetica","14"),
                              foreground="white",background="purple")
 
 
         soyaButton = self.MyButton(shareWin, text="Soya",
-                                   width = screen_width/15, 
-                                   height=screen_height/15,
+                                   width = screen_width/10, 
+                                   height=screen_height/10,
                                    style="soya.TButton",
                                    command=pressSoyaA)
         soyaButton.grid(row=3, column=3, pady=2)
@@ -499,12 +520,12 @@ class Example(Frame):
                 self.style.configure("wheat.TButton", background="purple")
 
 
-        self.style.configure("wheat.TButton", font=("Helvetica","24"),
+        self.style.configure("wheat.TButton", font=("Helvetica","14"),
                              foreground="white",background="purple")
 
         wheatButton = self.MyButton(shareWin, text="Wheat",
-                                    width = screen_width/15, 
-                                    height=screen_height/15,
+                                    width = screen_width/10, 
+                                    height=screen_height/10,
                                     style="wheat.TButton",
                                     command=pressWheatA)
         wheatButton.grid(row=4, column=3, pady=2)
@@ -528,12 +549,9 @@ class Example(Frame):
             clearDic()
             if len(idvar.get()) > 0: iddb.append([idvar.get()])
 
-            print localdb
-            print iddb
-
             writeToCSV()
 
-
+            deactivateKeyboard()
             shareWin.destroy()
 
         # updatevar = StringVar()
@@ -543,16 +561,26 @@ class Example(Frame):
 
         # emailCheck.grid(row=12,column=1)
 
-        idText = Label(shareWin, text="Do you want updates? Please enter your netid:", fg="white", font=("Helvetica", 16))
-        idText.grid(row=12, column=1)
+        idText = Label(shareWin, text="Do you want updates? Please enter your netid:", fg="white", font=("Helvetica", 12))
+        idText.grid(row=6, column=1)
 
+            
+        
         idvar = StringVar()
         idE = Entry(shareWin, textvariable=idvar)
+        #idE.bind("<FocusIn>",activateKeyboard)
+        idE.grid(row=7, column=1)
 
-        idE.grid(row=13, column=1)
-        
-        submitButton = Button(shareWin, text="Submit", command=submitFood) 
-        submitButton.grid(row=14, column=1)
+
+        self.style.configure("submit.TButton", font=("Helvetica","14"),
+                             foreground="white",background="purple")
+
+        submitButton = self.MyButton(shareWin, text="Submit",
+                                     width = screen_width/10, 
+                                     height=screen_height/10,
+                                     command=submitFood,
+                                     style='submit.TButton') 
+        submitButton.grid(row=8, column=1)
         
 
 def main():

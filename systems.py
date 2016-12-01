@@ -148,7 +148,7 @@ class Example(Frame):
 
             if val=='\\r':
                 if len(idvar.get()) == 16:
-                    scandb.append(idvar.get())
+                    scandb.append([idvar.get()])
                     writeToCSV()
                     ids.delete(0,'end')
                     create_Menu(self)

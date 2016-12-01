@@ -71,19 +71,24 @@ def clearDic():
         foodtypeDic[f] = False
 
 def writeToCSV():
-    with open('ID' + '.csv', 'w') as mycsvfile:
+    with open('ID.csv', 'w') as mycsvfile:
      thedatawriter = csv.writer(mycsvfile)
      for row in iddb:
          thedatawriter.writerow(row)
 
+    with open('SCAN.csv', 'w') as mycsvfile:
+     thedatawriter = csv.writer(mycsvfile)
+     for row in scandb:
+         thedatawriter.writerow(row)
 
-    with open('Food' + '.csv', 'w') as mycsvfile:
+
+    with open('Food.csv', 'w') as mycsvfile:
      thedatawriter = csv.writer(mycsvfile)
      for row in localdb:
          thedatawriter.writerow(row)
 
 class Example(Frame):
-  
+
     class MyButton(Frame):
         def __init__(self, parent, height=None, width=None, text="", command=None, style=None):
             Frame.__init__(self, parent, height=height, width=width, style="MyButton.TFrame")
@@ -92,7 +97,6 @@ class Example(Frame):
             self._btn = Button(self, text=text, command=command, style=style)
             self._btn.pack(fill=tk.BOTH, expand=1)
             # self._btn.place(x = screen_width/2, y=screen_height/2)
-
 
 
     def __init__(self, parent):
@@ -135,29 +139,71 @@ class Example(Frame):
         logoLabel.image = logoObj
         logoLabel.place(x = (screen_width - logow)/2, y = 0)
 
-        shareButton = self.MyButton(self, text="Give",
-                                    command=self.create_ShareWin, 
-                                    width = screen_width/2.5, 
-                                    height=screen_height/2.5
-        )
 
-        shareButton.place(x = 20, y=screen_height/2)
-        # shareButton.grid(row=1,column=0)
 
-        acceptButton = self.MyButton(self, text="Accept",
-                                     command=self.create_AcceptWin,
-                                     width = screen_width/2.5, 
-                                     height=screen_height/2.5)
-        acceptButton.place(x = screen_width/2, y=screen_height/2)
-        # acceptButton.grid(row=6,column=2)
+        def BarcodeScan(event):
+            global scandb
+            
+            val=('{k!r}'.format(k = event.char))[1:-1]
 
-        # quitButton = Button(self, text="Quit",
-        #                       command=self.quit)
-        # quitButton.grid(sticky=bottom)
-        # quitButton.pack()
+            if val=='\\r':
+                if len(idvar.get()) == 16:
+                    scandb.append(idvar.get())
+                    writeToCSV()
+                    ids.delete(0,'end')
+                    create_Menu(self)
+                else: ids.delete(0,'end')
 
+        idvar = StringVar()
+        ids = Entry(self, textvariable=idvar)
+        ids.bind("<Key>",BarcodeScan)
+        ids.pack(side=BOTTOM, pady = 10)
+
+        idText = Label(self, text="Scan your ID", fg="white", font=("Helvetica", 16))
+        idText.pack(side=BOTTOM)
+        
+        def create_Menu(self):
+            self.menuWin = tk.Toplevel(self)
+            self.menuWin.title('Accept Window')
+            self.menuWin.geometry(geoscreen)
+            self.menuWin.configure()
+
+            logo = Image.open("logo.png")
+            logow , logoh = logo.size
+            logoObj = ImageTk.PhotoImage(logo)
+            logoLabel = Label(self.menuWin, image=logoObj)
+            logoLabel.image = logoObj
+            logoLabel.place(x = (screen_width - logow)/2, y = 0)
+
+            shareButton = self.MyButton(self.menuWin, text="Give",
+                                        command=self.create_ShareWin, 
+                                        width = screen_width/2.5, 
+                                        height=screen_height/2.5
+            )
+
+            shareButton.place(x = 20, y=screen_height/2)
+
+
+            acceptButton = self.MyButton(self.menuWin, text="Accept",
+                                         command=self.create_AcceptWin,
+                                         width = screen_width/2.5, 
+                                         height=screen_height/2.5)
+            acceptButton.place(x = screen_width/2, y=screen_height/2)
+
+            # shareButton.grid(row=1,column=0)
+
+            # acceptButton.grid(row=6,column=2)
+
+            # quitButton = Button(self, text="Quit",
+            #                       command=self.quit)
+            # quitButton.grid(sticky=bottom)
+            # quitButton.pack()
+        
     def create_AcceptWin(self):
         global accepts
+
+        self.menuWin.destroy()
+        
         accepts += 1
         print 'Number of Accepts: %d' % accepts
         acceptWin = tk.Toplevel(self)
@@ -169,14 +215,14 @@ class Example(Frame):
         menuLabel = Label(acceptWin)
         menuLabel.config(text="Thank You", fg="white", font=("Helvetica", 48))
         menuLabel.pack()
-        
+
         def submitAccept():
             if len(idvar.get()) > 0: iddb.append([idvar.get()])
 
             writeToCSV()
             deactivateKeyboard()
             acceptWin.destroy()
-        
+
         self.style.configure("accept.TButton", font=("Helvetica","24"),
                              foreground="white",background="purple")
 
@@ -184,25 +230,20 @@ class Example(Frame):
                               style="accept.TButton") 
         submitButton.pack(side=BOTTOM)
 
-        def BarcodeScan(event):
-            val=('{k!r}'.format(k = event.char))[1:-1]
-                    
-            if val=='\\r':
-                if len(idvar.get()) == 16:
-                    scandb.append(idvar.get())
-        
         idvar = StringVar()
         idE = Entry(acceptWin, textvariable=idvar)
-        #idE.bind("<FocusIn>",activateKeyboard)
-        idE.bind("<Key>",BarcodeScan)
+        idE.bind("<FocusIn>",activateKeyboard)
         idE.pack(side=BOTTOM)
 
         idText = Label(acceptWin, text="Do you want updates? Please enter your netid:", fg="white", font=("Helvetica", 16))
         idText.pack(side=BOTTOM)
+            
 
 
     def create_ShareWin(self):
         global shares
+
+        self.menuWin.destroy()
         shares += 1
         print 'Number of Shares: %d' % shares
         shareWin = tk.Toplevel(self)
@@ -218,7 +259,7 @@ class Example(Frame):
 
 
 
-        
+
         Q1 = Label(shareWin)
         Q1.config(text="Food Type", 
                          font=("Helvetica",16), foreground="white")
@@ -345,7 +386,7 @@ class Example(Frame):
 
         self.style.configure("packaged.TButton", font=("Helvetica","14"),
                              foreground="white",background="purple")
-        
+
         packagedButton = self.MyButton(shareWin, text="Packaged",
                                        width = screen_width/10, 
                                        height=screen_height/10,
@@ -373,7 +414,7 @@ class Example(Frame):
 
         self.style.configure("egg.TButton", font=("Helvetica","14"),
                              foreground="white",background="purple")
-        
+
         eggButton = self.MyButton(shareWin, text="Egg",
                                   width = screen_width/10, 
                                   height=screen_height/10,
@@ -530,20 +571,20 @@ class Example(Frame):
                                     command=pressWheatA)
         wheatButton.grid(row=4, column=3, pady=2)
 
-        
+
         def submitFood():
             global foodtypeDic, allergenDic, foodList
-            
+
             typestr = "Type: "
             for f in foodtypeDic:
                 if foodtypeDic[f]:
                     typestr += f + " "
-                    
+
             allergenstr = "Allergen: "
             for f in allergenDic :
                 if allergenDic[f]:
                     allergenstr += f + " "
-                
+
             localdb.append([typestr,allergenstr])
 
             clearDic()
@@ -555,7 +596,7 @@ class Example(Frame):
             shareWin.destroy()
 
         # updatevar = StringVar()
-        
+
         # emailCheck = Checkbutton(shareWin ,variable=updatevar, 
         #                          text="Do you want updates? Enter yo")
 
@@ -564,11 +605,11 @@ class Example(Frame):
         idText = Label(shareWin, text="Do you want updates? Please enter your netid:", fg="white", font=("Helvetica", 12))
         idText.grid(row=6, column=1)
 
-            
-        
+
+
         idvar = StringVar()
         idE = Entry(shareWin, textvariable=idvar)
-        #idE.bind("<FocusIn>",activateKeyboard)
+        idE.bind("<FocusIn>",activateKeyboard)
         idE.grid(row=7, column=1)
 
 
@@ -581,7 +622,7 @@ class Example(Frame):
                                      command=submitFood,
                                      style='submit.TButton') 
         submitButton.grid(row=8, column=1)
-        
+
 
 def main():
     root.geometry(geoscreen)

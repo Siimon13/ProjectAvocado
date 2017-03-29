@@ -1,11 +1,13 @@
 import Tkinter as tk
+import ttk
 from Tkinter import Tk, RIGHT,TOP, LEFT, BOTTOM, BOTH, RAISED, Label, Radiobutton, StringVar, IntVar, Frame, SUNKEN
 import tkFont
-from ttk import Button, Style, Frame, Entry, OptionMenu, Checkbutton
+from ttk import Style, Frame, Entry, OptionMenu, Checkbutton, Button
 from PIL import Image, ImageTk
 import tkFont
 import csv
 import subprocess
+from datetime import datetime
 
 root = Tk()
 screen_width = root.winfo_screenwidth()
@@ -63,6 +65,7 @@ allergenDic = {'Egg' : eggAClicked,
                'Soya' : soyaAClicked,
                'Wheat' : wheatAClicked,
                'Shellfish' : shellfishAClicked}
+timernow 
 
 def clearDic():
     for f in allergenDic:
@@ -89,12 +92,14 @@ def writeToCSV():
 
 class Example(Frame):
 
+    
     class MyButton(Frame):
         def __init__(self, parent, height=None, width=None, text="", command=None, style=None):
             Frame.__init__(self, parent, height=height, width=width, style="MyButton.TFrame")
 
             self.pack_propagate(0)
-            self._btn = Button(self, text=text, command=command, style=style)
+            self._btn = ttk.Button(self, text=text, command=command, style=style)
+            self._btn.config()
             self._btn.pack(fill=tk.BOTH, expand=1)
             # self._btn.place(x = screen_width/2, y=screen_height/2)
 
@@ -108,101 +113,48 @@ class Example(Frame):
 
     
     def initUI(self):
-      
-        self.parent.title("Project Avocado")
+        
+        self.menuWin = self.parent
+        self.menuWin.title('Accept Window')
+        self.menuWin.geometry(geoscreen)
+        self.menuWin.configure()
         self.style = Style()
 
-        # print self.style.theme_names() 'clam', 'alt', 'default', 'classic'
-        self.style.theme_use("clam")
+        self.style.configure("menu.TButton", font=("Helvetica","24"),foreground="white",background="purple")
+
         
-
-        self.pack(fill=BOTH, expand=1)
-
-        self.style.configure("TFrame", background='#1BA',
-                             font=("Helvetica","18"), foreground="white")
-        self.style.configure("TButton", font=("Helvetica","64"), 
-                             foreground="white",background="purple")
-        self.style.configure("TLabel", font=("Helvetica","18"), 
-                             foreground="white")
-        self.style.configure("TCheckbutton", font=("Helvetica","18"), 
-                             background="#1BA",foreground="white")
-
-
-        self.style.configure("share.TButton", font=("Helvetica","24"),
-                             foreground="white",background="purple")
-
-
         logo = Image.open("logo.png")
         logow , logoh = logo.size
         logoObj = ImageTk.PhotoImage(logo)
-        logoLabel = Label(self, image=logoObj)
+        logoLabel = Label(self.menuWin, image=logoObj)
         logoLabel.image = logoObj
         logoLabel.place(x = (screen_width - logow)/2, y = 0)
 
+        logoLabel = Label(self.menuWin)
+        logoLabel.config(text="NYU Freedge", fg="purple", font=("Helvetica","50" ))
+        logoLabel.place(relx=.5, rely=.3, anchor="center")
 
-
-        def BarcodeScan(event):
-            global scandb
-            
-            val=('{k!r}'.format(k = event.char))[1:-1]
-
-            if val=='\\r':
-                if len(idvar.get()) == 16:
-                    scandb.append([idvar.get()])
-                    writeToCSV()
-                    ids.delete(0,'end')
-                    create_Menu(self)
-                else: ids.delete(0,'end')
-
-        idvar = StringVar()
-        ids = Entry(self, textvariable=idvar)
-        ids.bind("<Key>",BarcodeScan)
-        ids.pack(side=BOTTOM, pady = 10)
-
-        idText = Label(self, text="Scan your ID", fg="white", font=("Helvetica", 16))
-        idText.pack(side=BOTTOM)
-        
-        def create_Menu(self):
-            self.menuWin = tk.Toplevel(self)
-            self.menuWin.title('Accept Window')
-            self.menuWin.geometry(geoscreen)
-            self.menuWin.configure()
-
-            logo = Image.open("logo.png")
-            logow , logoh = logo.size
-            logoObj = ImageTk.PhotoImage(logo)
-            logoLabel = Label(self.menuWin, image=logoObj)
-            logoLabel.image = logoObj
-            logoLabel.place(x = (screen_width - logow)/2, y = 0)
-
-            shareButton = self.MyButton(self.menuWin, text="Give",
-                                        command=self.create_ShareWin, 
-                                        width = screen_width/2.5, 
-                                        height=screen_height/2.5
+        shareButton = self.MyButton(self.menuWin, text="Give",
+                                    command=self.create_ShareWin, 
+                                    width = screen_width/2.5, 
+                                    height=screen_height/2.5,
+                                    style="menu.TButton"
             )
 
-            shareButton.place(x = 20, y=screen_height/2)
+        shareButton.place(x = 20, y=screen_height/2)
 
 
-            acceptButton = self.MyButton(self.menuWin, text="Accept",
+        acceptButton = self.MyButton(self.menuWin, text="Accept",
                                          command=self.create_AcceptWin,
                                          width = screen_width/2.5, 
-                                         height=screen_height/2.5)
-            acceptButton.place(x = screen_width/2, y=screen_height/2)
-
-            # shareButton.grid(row=1,column=0)
-
-            # acceptButton.grid(row=6,column=2)
-
-            # quitButton = Button(self, text="Quit",
-            #                       command=self.quit)
-            # quitButton.grid(sticky=bottom)
-            # quitButton.pack()
+                                         height=screen_height/2.5,
+                                            style="menu.TButton")
+        acceptButton.place(x = screen_width/2, y=screen_height/2)
         
     def create_AcceptWin(self):
         global accepts
 
-        self.menuWin.destroy()
+        #self.menuWin.destroy()
         
         accepts += 1
         print 'Number of Accepts: %d' % accepts
@@ -213,7 +165,7 @@ class Example(Frame):
         # acceptWin.overrideredirect(1)
 
         menuLabel = Label(acceptWin)
-        menuLabel.config(text="Thank You", fg="white", font=("Helvetica", 48))
+        menuLabel.config(text="Thank You", fg="purple", font=("Helvetica", 48))
         menuLabel.pack()
 
         def submitAccept():
@@ -235,7 +187,7 @@ class Example(Frame):
         idE.bind("<FocusIn>",activateKeyboard)
         idE.pack(side=BOTTOM)
 
-        idText = Label(acceptWin, text="Do you want updates? Please enter your netid:", fg="white", font=("Helvetica", 16))
+        idText = Label(acceptWin, text="Do you want updates? Please enter your netid:", fg="purple", font=("Helvetica", 16))
         idText.pack(side=BOTTOM)
             
 
@@ -243,7 +195,7 @@ class Example(Frame):
     def create_ShareWin(self):
         global shares
 
-        self.menuWin.destroy()
+        #self.menuWin.destroy()
         shares += 1
         print 'Number of Shares: %d' % shares
         shareWin = tk.Toplevel(self)
@@ -254,7 +206,7 @@ class Example(Frame):
 
         menuLabel = Label(shareWin)
         menuLabel.config(text="Please select all that apply", 
-                         font=("Helvetica",14), foreground="white")
+                         font=("Helvetica",14), foreground="purple")
         menuLabel.grid(row=0, column= 1)
 
 
@@ -262,7 +214,7 @@ class Example(Frame):
 
         Q1 = Label(shareWin)
         Q1.config(text="Food Type", 
-                         font=("Helvetica",16), foreground="white")
+                         font=("Helvetica",16), foreground="purple")
         Q1.grid(row=1, column=0)
 
         def pressM():
@@ -271,7 +223,7 @@ class Example(Frame):
             foodtypeDic['Meat'] = not foodtypeDic['Meat']
 
             if foodtypeDic['Meat']:
-                self.style.configure("meat.TButton", background="gray")
+                self.style.configure("meat.TButton", background="green")
             else:
                 self.style.configure("meat.TButton", background="purple")
 
@@ -294,7 +246,7 @@ class Example(Frame):
             foodtypeDic['Dairy'] = not foodtypeDic['Dairy']
 
             if foodtypeDic['Dairy']:
-                self.style.configure("dairy.TButton", background="gray")
+                self.style.configure("dairy.TButton", background="green")
             else:
                 self.style.configure("dairy.TButton", background="purple")
 
@@ -316,7 +268,7 @@ class Example(Frame):
             foodtypeDic['Produce'] = not foodtypeDic['Produce']
 
             if foodtypeDic['Produce']:
-                self.style.configure("produce.TButton", background="gray")
+                self.style.configure("produce.TButton", background="green")
             else:
                 self.style.configure("produce.TButton", background="purple")
 
@@ -337,7 +289,7 @@ class Example(Frame):
             foodtypeDic['Baked'] = not foodtypeDic['Baked']
 
             if foodtypeDic['Baked']:
-                self.style.configure("baked.TButton", background="gray")
+                self.style.configure("baked.TButton", background="green")
             else:
                 self.style.configure("baked.TButton", background="purple")
 
@@ -358,7 +310,7 @@ class Example(Frame):
             foodtypeDic['Frozen'] = not foodtypeDic['Frozen']
 
             if foodtypeDic['Frozen']:
-                self.style.configure("frozen.TButton", background="gray")
+                self.style.configure("frozen.TButton", background="green")
             else:
                 self.style.configure("frozen.TButton", background="purple")
 
@@ -379,7 +331,7 @@ class Example(Frame):
             foodtypeDic['Packaged'] = not foodtypeDic['Packaged']
 
             if allergenDic['Packaged']:
-                self.style.configure("packaged.TButton", background="gray")
+                self.style.configure("packaged.TButton", background="green")
             else:
                 self.style.configure("packaged.TButton", background="purple")
 
@@ -407,7 +359,7 @@ class Example(Frame):
             allergenDic['Egg'] = not allergenDic['Egg']
 
             if allergenDic['Egg']:
-                self.style.configure("egg.TButton", background="gray")
+                self.style.configure("egg.TButton", background="green")
             else:
                 self.style.configure("egg.TButton", background="purple")
 
@@ -428,7 +380,7 @@ class Example(Frame):
             allergenDic['Fish'] = not allergenDic['Fish']
 
             if allergenDic['Fish']:
-                self.style.configure("fish.TButton", background="gray")
+                self.style.configure("fish.TButton", background="green")
             else:
                 self.style.configure("fish.TButton", background="purple")
 
@@ -450,7 +402,7 @@ class Example(Frame):
             allergenDic['Milk'] = not allergenDic['Milk']
 
             if allergenDic['Milk']:
-                self.style.configure("milk.TButton", background="gray")
+                self.style.configure("milk.TButton", background="green")
             else:
                 self.style.configure("milk.TButton", background="purple")
 
@@ -471,7 +423,7 @@ class Example(Frame):
             allergenDic['Nuts'] = not allergenDic['Nuts']
 
             if allergenDic['Nuts']:
-                self.style.configure("nuts.TButton", background="gray")
+                self.style.configure("nuts.TButton", background="green")
             else:
                 self.style.configure("nuts.TButton", background="purple")
 
@@ -492,7 +444,7 @@ class Example(Frame):
             allergenDic['Peanuts'] = not allergenDic['Peanuts']
 
             if allergenDic['Peanuts']:
-                self.style.configure("peanuts.TButton", background="gray")
+                self.style.configure("peanuts.TButton", background="green")
             else:
                 self.style.configure("peanuts.TButton", background="purple")
 
@@ -513,7 +465,7 @@ class Example(Frame):
             allergenDic['Shellfish'] = not allergenDic['Shellfish']
 
             if allergenDic['Shellfish']:
-                self.style.configure("shellfish.TButton", background="gray")
+                self.style.configure("shellfish.TButton", background="green")
             else:
                 self.style.configure("shellfish.TButton", background="purple")
 
@@ -534,7 +486,7 @@ class Example(Frame):
             allergenDic['Soya'] = not allergenDic['Soya']
 
             if allergenDic['Soya']:
-                self.style.configure("soya.TButton", background="gray")
+                self.style.configure("soya.TButton", background="green")
             else:
                 self.style.configure("soya.TButton", background="purple")
 
@@ -556,7 +508,7 @@ class Example(Frame):
             allergenDic['Wheat'] = not allergenDic['Wheat']
 
             if allergenDic['Wheat']:
-                self.style.configure("wheat.TButton", background="gray")
+                self.style.configure("wheat.TButton", background="green")
             else:
                 self.style.configure("wheat.TButton", background="purple")
 
@@ -602,7 +554,7 @@ class Example(Frame):
 
         # emailCheck.grid(row=12,column=1)
 
-        idText = Label(shareWin, text="Do you want updates? Please enter your netid:", fg="white", font=("Helvetica", 12))
+        idText = Label(shareWin, text="Do you want updates? Please enter your netid:", fg="purple", font=("Helvetica", 12))
         idText.grid(row=6, column=1)
 
 
@@ -625,8 +577,8 @@ class Example(Frame):
 
 
 def main():
-    root.geometry(geoscreen)
-    root.tk_setPalette(background='#1BA', foreground='slate gray',
+    root.geometry(geoscreen) 
+    root.tk_setPalette(background='white', foreground='slate gray',
                activeBackground='slate gray')
 
     app = Example(root)

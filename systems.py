@@ -65,8 +65,6 @@ allergenDic = {'Egg' : eggAClicked,
                'Soya' : soyaAClicked,
                'Wheat' : wheatAClicked,
                'Shellfish' : shellfishAClicked}
-timernow 
-
 def clearDic():
     for f in allergenDic:
         allergenDic[f] = False
@@ -115,7 +113,7 @@ class Example(Frame):
     def initUI(self):
         
         self.menuWin = self.parent
-        self.menuWin.title('Accept Window')
+        self.menuWin.title('Main Window')
         self.menuWin.geometry(geoscreen)
         self.menuWin.configure()
         self.style = Style()
@@ -134,7 +132,7 @@ class Example(Frame):
         logoLabel.config(text="NYU Freedge", fg="purple", font=("Helvetica","50" ))
         logoLabel.place(relx=.5, rely=.3, anchor="center")
 
-        shareButton = self.MyButton(self.menuWin, text="Give",
+        shareButton = self.MyButton(self.menuWin, text="Give Food",
                                     command=self.create_ShareWin, 
                                     width = screen_width/2.5, 
                                     height=screen_height/2.5,
@@ -144,7 +142,7 @@ class Example(Frame):
         shareButton.place(x = 20, y=screen_height/2)
 
 
-        acceptButton = self.MyButton(self.menuWin, text="Accept",
+        acceptButton = self.MyButton(self.menuWin, text="Take Food",
                                          command=self.create_AcceptWin,
                                          width = screen_width/2.5, 
                                          height=screen_height/2.5,
